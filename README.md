@@ -1,4 +1,4 @@
-# Smartbot Framework (Mqtt Admin Starter)
+# Mqtt Admin Starter
 
 This project contains a basic service to register and unregister clients to authenticate to an MQTT broker.
 
@@ -6,7 +6,7 @@ This project contains a basic service to register and unregister clients to auth
 For EMQ X Broker:
 
 ```properties
-emqx.api.host=host
+emqx.api.host=localhost
 emqx.api.port=18083
 emqx.api.username=admin
 emqx.api.password=public
