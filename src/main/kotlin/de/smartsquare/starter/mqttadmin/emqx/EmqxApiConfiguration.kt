@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot.emqx
+package de.smartsquare.starter.mqttadmin.emqx
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.web.client.RestTemplateBuilder

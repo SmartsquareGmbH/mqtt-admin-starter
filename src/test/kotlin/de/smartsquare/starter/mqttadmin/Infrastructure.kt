@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot
+package de.smartsquare.starter.mqttadmin
 
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource

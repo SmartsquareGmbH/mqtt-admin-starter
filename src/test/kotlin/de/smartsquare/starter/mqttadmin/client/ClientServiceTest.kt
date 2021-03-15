@@ -1,7 +1,7 @@
-package de.smartsquare.smartbot.client
+package de.smartsquare.starter.mqttadmin.client
 
-import de.smartsquare.smartbot.Infrastructure
-import de.smartsquare.smartbot.emqx.EmqxApiClient
+import de.smartsquare.starter.mqttadmin.Infrastructure
+import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeTrue
 import org.junit.jupiter.api.AfterEach

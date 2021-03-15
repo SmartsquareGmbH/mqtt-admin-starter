@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot.emqx
+package de.smartsquare.starter.mqttadmin.emqx
 
 /**
  *  [EMQ X HTTP API documentation](https://docs.emqx.io/en/broker/latest/advanced/http-api.html)

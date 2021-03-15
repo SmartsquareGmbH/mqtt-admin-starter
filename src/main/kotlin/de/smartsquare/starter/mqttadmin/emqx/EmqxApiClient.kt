@@ -1,10 +1,10 @@
-package de.smartsquare.smartbot.emqx
+package de.smartsquare.starter.mqttadmin.emqx
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.smartsquare.smartbot.client.AclRule
-import de.smartsquare.smartbot.client.BrokerApiClient
-import de.smartsquare.smartbot.client.ClientData
-import de.smartsquare.smartbot.client.ClientActionResult
+import de.smartsquare.starter.mqttadmin.client.AclRule
+import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
+import de.smartsquare.starter.mqttadmin.client.ClientActionResult
+import de.smartsquare.starter.mqttadmin.client.ClientData
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientException

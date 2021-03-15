@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot.emqx
+package de.smartsquare.starter.mqttadmin.emqx
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding

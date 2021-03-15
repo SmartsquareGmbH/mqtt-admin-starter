@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot.client
+package de.smartsquare.starter.mqttadmin.client
 
 data class ClientActionResult (
     val success: Boolean,

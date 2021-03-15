@@ -1,4 +1,4 @@
-package de.smartsquare.smartbot.client
+package de.smartsquare.starter.mqttadmin.client
 
 interface BrokerApiClient {
     fun registerClient(clientData: ClientData, aclRule: AclRule): ClientActionResult
