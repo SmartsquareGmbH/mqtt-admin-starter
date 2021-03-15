@@ -4,15 +4,14 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.images.builder.ImageFromDockerfile
-import java.nio.file.Paths
 
 abstract class Infrastructure {
 
     companion object {
         val emqx = KGenericContainer(
             ImageFromDockerfile("emqx-e2e-test", false)
-                .withFileFromPath("emqx_auth_mnesia.conf", Paths.get("../compose/emqx/emqx_auth_mnesia.conf"))
-                .withFileFromPath("Dockerfile", Paths.get("../compose/emqx/Dockerfile"))
+                .withFileFromClasspath("emqx_auth_mnesia.conf", "emqx_auth_mnesia.conf")
+                .withFileFromClasspath("Dockerfile", "Dockerfile")
         ).waitingFor(Wait.forLogMessage(".*is running now!.*", 1))
 
         @JvmStatic

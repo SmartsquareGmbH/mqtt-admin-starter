@@ -6,7 +6,7 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
-class SmartbotFrameworkApplication
+open class SmartbotFrameworkApplication
 
 fun main(args: Array<String>) {
     runApplication<SmartbotFrameworkApplication>(*args)
