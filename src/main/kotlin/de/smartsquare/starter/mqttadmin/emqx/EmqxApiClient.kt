@@ -6,14 +6,12 @@ import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
 import de.smartsquare.starter.mqttadmin.client.ClientActionResult
 import de.smartsquare.starter.mqttadmin.client.ClientData
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForObject
 import java.net.URLEncoder
 
-@Service
-class EmqxApiClient(
+open class EmqxApiClient(
     @Qualifier("emqx") private val restTemplate: RestTemplate,
     private val objectMapper: ObjectMapper
 ) : BrokerApiClient {

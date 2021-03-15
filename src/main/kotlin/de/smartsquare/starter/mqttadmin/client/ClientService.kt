@@ -1,9 +1,6 @@
 package de.smartsquare.starter.mqttadmin.client
 
-import org.springframework.stereotype.Service
-
-@Service
-class ClientService(private val brokerApiClient: BrokerApiClient) {
+open class ClientService(private val brokerApiClient: BrokerApiClient) {
 
     fun registerClient(
         clientData: ClientData,

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+de.smartsquare.starter.mqttadmin.client.ClientConfiguration,\
+de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
