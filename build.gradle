@@ -1,0 +1,91 @@
+buildscript {
+    ext {
+        javaVersion = JavaVersion.VERSION_11
+
+        junitVersion = "5.7.1"
+        kotlinVersion = "1.4.30"
+        jacksonVersion = "2.12.1"
+        springBootVersion = "2.4.2"
+        hivemqClientVersion = "1.2.1"
+        kluentVersion = "1.65"
+    }
+
+    repositories {
+        gradlePluginPortal()
+    }
+
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
+plugins {
+    id 'maven-publish'
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = javaVersion.toString()
+    }
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+
+    testImplementation "org.amshove.kluent:kluent:$kluentVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+//    testImplementation "org.springframework.integration:spring-integration-test:$springBootVersion"
+    testImplementation "org.testcontainers:testcontainers:1.15.2"
+    testImplementation "org.testcontainers:junit-jupiter:1.15.2"
+}
+
+group = 'de.smartsquare'
+version = '1.0'
+description = 'Spring Boot Starter providing admin functionality for brokers.'
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/SmartsquareGmbH/mqtt-admin-starter")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            version = System.getenv("GITHUB_VERSION") ?: project.version
+
+            from(components.java)
+        }
+    }
+}
+
+test {
+    useJUnitPlatform {
+        excludeEngines "junit-vintage"
+    }
+}
