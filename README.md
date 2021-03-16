@@ -52,19 +52,17 @@ auth.mnesia.as = clientid
 
 ```kotlin
 class TestClientRegistration(private val clientService: ClientService) {
-
-    private val clientData = ClientData(
-        clientId = "testClientId",
-        password = "password"
-    )
     
     fun register() {
         
-        // Registers the client and generates an acl rule with publish and subscribe permission for the topic clientId/#
-        // Can consume a custom acl rule: AclRule(login: String, topic: String, action: String, allow: Boolean)
+        // Can consume a various number of acl rules: 
+        // AclRule(login: String, topic: String, action: String, allow: Boolean)
         // Where login is some clientId and action is "pub"|"sub"|"pubsub"
         // Returns RegistrationResult(success: Boolean, message: String?)
-        clientService.registerClient(clientData)
+        clientService.registerClient(
+            clientId = "testClientId",
+            password = "password"
+        )
     }
     
     fun unregister() {
