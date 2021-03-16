@@ -70,18 +70,18 @@ open class EmqxApiClient(
     }
 
     private fun getAclRules(clientId: String): EmqxApiRequestResult<List<AclRuleDto>> {
-        val result = restTemplate.getForObject<JsonNode>("$aclRuleUrl/$clientId")
+        val result = restTemplate.getForObject<JsonNode>("$aclRuleUrl/$clientId")["data"]
 
         return when {
-            result["data"].nodeType == JsonNodeType.ARRAY -> {
+            result.nodeType == JsonNodeType.ARRAY -> {
                 EmqxApiRequestResult(
                     code = 0,
-                    data = result["data"].mapNotNull { it.convertToAclRuleDto() })
+                    data = result.mapNotNull { it.convertToAclRuleDto() })
             }
-            result["data"].nodeType == JsonNodeType.OBJECT && result["data"].size() == 4 -> {
+            result.nodeType == JsonNodeType.OBJECT && result.size() == 4 -> {
                 EmqxApiRequestResult(
                     code = 0,
-                    data = listOf(result["data"].convertToAclRuleDto()!!)
+                    data = listOf(result.convertToAclRuleDto()!!)
                 )
             }
             else -> {
