@@ -3,20 +3,14 @@ package de.smartsquare.starter.mqttadmin.client
 open class ClientService(private val brokerApiClient: BrokerApiClient) {
 
     fun registerClient(
-        clientData: ClientData,
-        aclRule: AclRule = generateDefaultAclRule(clientData.clientId)
+        clientId: String,
+        password: String,
+        vararg aclRule: AclRule
     ): ClientActionResult {
-        return brokerApiClient.registerClient(clientData, aclRule)
+        return brokerApiClient.registerClient(ClientData(clientId, password), *aclRule)
     }
 
     fun unregisterClient(clientId: String): ClientActionResult {
         return brokerApiClient.unregisterClient(clientId)
     }
-
-    private fun generateDefaultAclRule(clientId: String) = AclRule(
-        login = clientId,
-        topic = "$clientId/#",
-        action = AclRule.TopicAction.PUBSUB,
-        allow = true
-    )
 }

@@ -1,6 +1,6 @@
 package de.smartsquare.starter.mqttadmin.client
 
 interface BrokerApiClient {
-    fun registerClient(clientData: ClientData, aclRule: AclRule): ClientActionResult
+    fun registerClient(clientData: ClientData, vararg aclRule: AclRule): ClientActionResult
     fun unregisterClient(clientId: String): ClientActionResult
 }

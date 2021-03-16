@@ -1,6 +1,9 @@
 package de.smartsquare.starter.mqttadmin.emqx
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.JsonNodeType
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import de.smartsquare.starter.mqttadmin.client.AclRule
 import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
 import de.smartsquare.starter.mqttadmin.client.ClientActionResult
@@ -8,8 +11,8 @@ import de.smartsquare.starter.mqttadmin.client.ClientData
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.getForObject
 import org.springframework.web.client.postForObject
-import java.net.URLEncoder
 
 open class EmqxApiClient(
     @Qualifier("emqx") private val restTemplate: RestTemplate,
@@ -19,10 +22,13 @@ open class EmqxApiClient(
     private val authClientUrl = "/api/v4/auth_clientid"
     private val aclRuleUrl = "/api/v4/mqtt_acl"
 
-    override fun registerClient(clientData: ClientData, aclRule: AclRule): ClientActionResult {
+    override fun registerClient(clientData: ClientData, vararg aclRule: AclRule): ClientActionResult {
         return try {
             post(authClientUrl, clientData)
-            post(aclRuleUrl, aclRule.convertToRequestObject())
+
+            if (aclRule.isNotEmpty()) {
+                post(aclRuleUrl, aclRule.map { it.convertToTransferObject() })
+            }
 
             ClientActionResult(success = true)
         } catch (e: RestClientException) {
@@ -37,8 +43,7 @@ open class EmqxApiClient(
         return try {
             restTemplate.delete("$authClientUrl/$clientId")
 
-            val encodedTopic = URLEncoder.encode("$clientId/#", "UTF-8")
-            restTemplate.delete("$aclRuleUrl/$clientId/$encodedTopic")
+            deleteAclRules(clientId)
 
             ClientActionResult(success = true)
         } catch (e: RestClientException) {
@@ -46,8 +51,16 @@ open class EmqxApiClient(
         }
     }
 
+    private fun deleteAclRules(clientId: String) {
+        val aclRules = getAclRules(clientId).data!!
+
+        for (aclRule in aclRules) {
+            restTemplate.delete("$aclRuleUrl/$clientId/${aclRule.topic}")
+        }
+    }
+
     private fun post(url: String, data: Any) {
-        val result = restTemplate.postForObject<EmqxApiRequestResult>(
+        val result = restTemplate.postForObject<EmqxApiRequestResult<Any>>(
             url = url,
             request = objectMapper.writeValueAsString(data)
         )
@@ -55,7 +68,28 @@ open class EmqxApiClient(
         evaluateResult(result)
     }
 
-    private fun evaluateResult(result: EmqxApiRequestResult) {
+    private fun getAclRules(clientId: String): EmqxApiRequestResult<List<AclRuleDto>> {
+        val result = restTemplate.getForObject<JsonNode>("$aclRuleUrl/$clientId")
+
+        return when {
+            result["data"].nodeType == JsonNodeType.ARRAY -> {
+                EmqxApiRequestResult(
+                    code = 0,
+                    data = result["data"].mapNotNull { it.convertToAclRuleDto() })
+            }
+            result["data"].nodeType == JsonNodeType.OBJECT && result["data"].size() == 4 -> {
+                EmqxApiRequestResult(
+                    code = 0,
+                    data = listOf(result["data"].convertToAclRuleDto()!!)
+                )
+            }
+            else -> {
+                EmqxApiRequestResult(code = 0, data = emptyList())
+            }
+        }
+    }
+
+    private fun evaluateResult(result: EmqxApiRequestResult<Any>) {
         if (result.code == null || result.code != 0) {
             if (result.message != null) {
                 throw RestClientException(result.message)
@@ -65,17 +99,19 @@ open class EmqxApiClient(
         }
     }
 
-    private data class AclRuleRequest(
+    private data class AclRuleDto(
         val login: String,
         val topic: String,
         val action: String,
         val allow: Boolean
     )
 
-    private fun AclRule.convertToRequestObject() = AclRuleRequest(
+    private fun AclRule.convertToTransferObject() = AclRuleDto(
         login = this.login,
         topic = this.topic,
         action = this.action.action,
         allow = this.allow
     )
+
+    private fun JsonNode.convertToAclRuleDto() = objectMapper.treeToValue<AclRuleDto>(this)
 }
