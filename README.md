@@ -55,6 +55,7 @@ class TestClientRegistration(private val clientService: ClientService) {
     
     fun register() {
         
+        // Registers a client to authenticate via clientId and password. 
         // Can consume a various number of acl rules: 
         // AclRule(login: String, topic: String, action: String, allow: Boolean)
         // Where login is some clientId and action is "pub"|"sub"|"pubsub"
