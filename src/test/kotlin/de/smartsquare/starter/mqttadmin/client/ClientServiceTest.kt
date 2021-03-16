@@ -1,17 +1,22 @@
 package de.smartsquare.starter.mqttadmin.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.starter.mqttadmin.Infrastructure
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
+import de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.testcontainers.junit.jupiter.Testcontainers
 
-@SpringBootTest
 @Testcontainers
+@SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class, ClientServiceTest.JacksonConfiguration::class])
 class ClientServiceTest : Infrastructure() {
 
     @Autowired
@@ -51,6 +56,13 @@ class ClientServiceTest : Infrastructure() {
 
         val result = clientService.unregisterClient(clientData.clientId)
         result.isSuccessful()
+    }
+
+    @Configuration
+    open class JacksonConfiguration {
+
+        @Bean
+        open fun objectMapper(): ObjectMapper = jacksonObjectMapper().findAndRegisterModules()
     }
 
     private fun ClientActionResult.isSuccessful(): Boolean {
