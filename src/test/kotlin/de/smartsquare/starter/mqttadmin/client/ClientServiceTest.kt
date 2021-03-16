@@ -30,7 +30,7 @@ class ClientServiceTest : Infrastructure() {
 
     private val aclRule = AclRule(
         login = clientId,
-        topic = "testTopic",
+        topic = "testTopic/#",
         action = AclRule.TopicAction.SUB,
         allow = true
     )
