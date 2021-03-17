@@ -77,7 +77,7 @@ open class EmqxApiClient(
                     code = 0,
                     data = result.mapNotNull { it.convertToAclRuleDto() })
             }
-            result.nodeType == JsonNodeType.OBJECT && result.size() == 4 -> {
+            result.nodeType == JsonNodeType.OBJECT && result.hasNonNull("topic") -> {
                 EmqxApiRequestResult(
                     code = 0,
                     data = listOf(result.convertToAclRuleDto()!!)

@@ -27,25 +27,17 @@ services:
       - 1883:1883
       - 8081:8081
       - 18083:18083
+    environment:
+      - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
+      - EMQX_AUTH__MNESIA__AS=clientid
 ```
 
-```dockerfile
-# Dockerfile
-
-FROM emqx/emqx:4.2.7
-COPY emqx_auth_mnesia.conf /opt/emqx/etc/plugins/emqx_auth_mnesia.conf
-ENV EMQX_LOADED_PLUGINS emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
-```
-
-For EMQ X we only support authentication by clientid, so the default authentication needs to be overridden:
+Or:
 ```shell
-# emqx_auth_mnesia.conf
-
-## Password hash.
-auth.mnesia.password_hash = sha256
-
-## Auth as username or auth as clientid.
-auth.mnesia.as = clientid
+docker run -d --name emqx -p 1883:1883 -p 8081:8081 -p 18083:18083 \
+    -e EMQX_LOADED_PLUGINS="emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia" \
+    -e EMQX_AUTH__MNESIA__AS="clientid" \
+    emqx/emqx:4.2.7
 ```
 
 ### Service API
