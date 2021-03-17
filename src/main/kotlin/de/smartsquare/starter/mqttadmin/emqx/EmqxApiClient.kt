@@ -55,7 +55,6 @@ open class EmqxApiClient(
         val aclRules = getAclRules(clientId).data!!
 
         for (aclRule in aclRules) {
-            // The topic needs to be encoded with UrlEncode
             restTemplate.delete("$aclRuleUrl/$clientId/{topic}", aclRule.topic)
         }
     }
