@@ -6,7 +6,6 @@ buildscript {
         kotlinVersion = "1.4.30"
         jacksonVersion = "2.12.1"
         springBootVersion = "2.4.2"
-        hivemqClientVersion = "1.2.1"
         kluentVersion = "1.65"
     }
 
@@ -28,7 +27,6 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
-    jcenter()
 }
 
 java {
