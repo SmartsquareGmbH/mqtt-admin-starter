@@ -1,13 +1,23 @@
 package de.smartsquare.starter.mqttadmin.client
 
+import org.slf4j.LoggerFactory
+
 open class ClientService(private val brokerApiClient: BrokerApiClient) {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     fun registerClient(
         clientId: String,
         password: String,
         vararg aclRule: AclRule
     ): ClientActionResult {
-        return brokerApiClient.registerClient(ClientData(clientId, password), *aclRule)
+        val result = brokerApiClient.registerClient(ClientData(clientId, password), *aclRule)
+
+        if (result.success && aclRule.isEmpty()) {
+            logger.debug("Registered client $clientId without any acl rule.")
+        }
+
+        return result
     }
 
     fun unregisterClient(clientId: String): ClientActionResult {
