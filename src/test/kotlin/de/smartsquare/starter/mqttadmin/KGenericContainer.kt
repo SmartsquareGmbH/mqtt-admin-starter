@@ -1,6 +1,6 @@
 package de.smartsquare.starter.mqttadmin
 
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.images.builder.ImageFromDockerfile
+import org.testcontainers.utility.DockerImageName
 
-class KGenericContainer(image: ImageFromDockerfile) : GenericContainer<KGenericContainer>(image)
+class KGenericContainer(image: DockerImageName) : GenericContainer<KGenericContainer>(image)

@@ -3,17 +3,16 @@ package de.smartsquare.starter.mqttadmin
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.images.builder.ImageFromDockerfile
-import java.nio.file.Paths
+import org.testcontainers.utility.DockerImageName
 
 abstract class Infrastructure {
 
     companion object {
-        val emqx = KGenericContainer(
-            ImageFromDockerfile("emqx-e2e-test", false)
-                .withFileFromPath("emqx_auth_mnesia.conf", Paths.get("../compose/emqx/emqx_auth_mnesia.conf"))
-                .withFileFromPath("Dockerfile", Paths.get("../compose/emqx/Dockerfile"))
-        ).waitingFor(Wait.forLogMessage(".*is running now!.*", 1))
+        private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.2.7"))
+            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia")
+            .withEnv("EMQX_AUTH__MNESIA__AS", "clientid")
+            .withExposedPorts(1883, 8081, 18083)
+            .waitingFor(Wait.forLogMessage(".*is running now!.*", 1))
 
         @JvmStatic
         @DynamicPropertySource

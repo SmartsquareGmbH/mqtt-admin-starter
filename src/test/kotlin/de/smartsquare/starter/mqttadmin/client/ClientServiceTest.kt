@@ -1,17 +1,22 @@
 package de.smartsquare.starter.mqttadmin.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.starter.mqttadmin.Infrastructure
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
+import de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.testcontainers.junit.jupiter.Testcontainers
 
-@SpringBootTest
 @Testcontainers
+@SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class, ClientServiceTest.JacksonConfiguration::class])
 class ClientServiceTest : Infrastructure() {
 
     @Autowired
@@ -20,37 +25,72 @@ class ClientServiceTest : Infrastructure() {
     @Autowired
     private lateinit var emqxApiClient: EmqxApiClient
 
-    private val clientData = ClientData(
-        clientId = "testClient",
-        password = "test"
+    private val clientId = "testClientId"
+    private val password = "test"
+
+    private val aclRule = AclRule(
+        login = clientId,
+        topic = "testTopic/#",
+        action = AclRule.TopicAction.SUB,
+        allow = true
     )
 
     @AfterEach
     fun cleanUp() {
-        emqxApiClient.unregisterClient(clientData.clientId)
+        emqxApiClient.unregisterClient(clientId)
     }
 
     @Test
-    fun `registers client`() {
-        val result = clientService.registerClient(clientData)
+    fun `registers client without acl rules`() {
+        val result = clientService.registerClient(clientId, password)
+
+        result.isSuccessful()
+    }
+
+    @Test
+    fun `registers client with acl rules`() {
+        val result = clientService.registerClient(clientId, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
         result.isSuccessful()
     }
 
     @Test
     fun `should not register client twice`() {
-        clientService.registerClient(clientData)
+        clientService.registerClient(clientId, password)
 
-        val result = clientService.registerClient(clientData)
+        val result = clientService.registerClient(clientId, password)
         result.isNotSuccessful()
     }
 
     @Test
     fun `should unregister client`() {
-        clientService.registerClient(clientData)
+        clientService.registerClient(clientId, password)
 
-        val result = clientService.unregisterClient(clientData.clientId)
+        val result = clientService.unregisterClient(clientId)
         result.isSuccessful()
+    }
+
+    @Test
+    fun `should unregister client and delete single acl rule`() {
+        clientService.registerClient(clientId, password, aclRule)
+
+        val result = clientService.unregisterClient(clientId)
+        result.isSuccessful()
+    }
+
+    @Test
+    fun `should unregister client and delete multiple acl rules`() {
+        clientService.registerClient(clientId, password, aclRule, aclRule.copy(topic = "anotherTopic"))
+
+        val result = clientService.unregisterClient(clientId)
+        result.isSuccessful()
+    }
+
+    @Configuration
+    open class JacksonConfiguration {
+
+        @Bean
+        open fun objectMapper(): ObjectMapper = jacksonObjectMapper().findAndRegisterModules()
     }
 
     private fun ClientActionResult.isSuccessful(): Boolean {

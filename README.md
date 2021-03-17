@@ -1,4 +1,4 @@
-# Smartbot Framework (Mqtt Admin Starter)
+# Mqtt Admin Starter
 
 This project contains a basic service to register and unregister clients to authenticate to an MQTT broker.
 
@@ -6,7 +6,7 @@ This project contains a basic service to register and unregister clients to auth
 For EMQ X Broker:
 
 ```properties
-emqx.api.host=host
+emqx.api.host=localhost
 emqx.api.port=18083
 emqx.api.username=admin
 emqx.api.password=public
@@ -27,44 +27,35 @@ services:
       - 1883:1883
       - 8081:8081
       - 18083:18083
+    environment:
+      - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
+      - EMQX_AUTH__MNESIA__AS=clientid
 ```
 
-```dockerfile
-# Dockerfile
-
-FROM emqx/emqx:4.2.7
-COPY emqx_auth_mnesia.conf /opt/emqx/etc/plugins/emqx_auth_mnesia.conf
-ENV EMQX_LOADED_PLUGINS emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
-```
-
-For EMQ X we only support authentication by clientid, so the default authentication needs to be overridden:
+Or:
 ```shell
-# emqx_auth_mnesia.conf
-
-## Password hash.
-auth.mnesia.password_hash = sha256
-
-## Auth as username or auth as clientid.
-auth.mnesia.as = clientid
+docker run -d --name emqx -p 1883:1883 -p 8081:8081 -p 18083:18083 \
+    -e EMQX_LOADED_PLUGINS="emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia" \
+    -e EMQX_AUTH__MNESIA__AS="clientid" \
+    emqx/emqx:4.2.7
 ```
 
 ### Service API
 
 ```kotlin
 class TestClientRegistration(private val clientService: ClientService) {
-
-    private val clientData = ClientData(
-        clientId = "testClientId",
-        password = "password"
-    )
     
     fun register() {
         
-        // Registers the client and generates an acl rule with publish and subscribe permission for the topic clientId/#
-        // Can consume a custom acl rule: AclRule(login: String, topic: String, action: String, allow: Boolean)
+        // Registers a client to authenticate via clientId and password. 
+        // Can consume a various number of acl rules: 
+        // AclRule(login: String, topic: String, action: String, allow: Boolean)
         // Where login is some clientId and action is "pub"|"sub"|"pubsub"
         // Returns RegistrationResult(success: Boolean, message: String?)
-        clientService.registerClient(clientData)
+        clientService.registerClient(
+            clientId = "testClientId",
+            password = "password"
+        )
     }
     
     fun unregister() {
