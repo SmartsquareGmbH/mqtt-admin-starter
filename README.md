@@ -21,8 +21,7 @@ For EMQ X Broker:
 version: '3'
 services:
   emqx:
-    build:
-      context: emqx
+    image: emqx/emqx:4.2.7
     ports:
       - 1883:1883
       - 8081:8081
@@ -30,14 +29,26 @@ services:
     environment:
       - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
       - EMQX_AUTH__MNESIA__AS=clientid
+      - EMQX_ALLOW_ANONYMOUS=false
+      - EMQX_ACL_NOMATCH=deny
+    volumes:
+      - ./acl.conf:/opt/emqx/etc/acl.conf:ro
 ```
 
-Or:
 ```shell
-docker run -d --name emqx -p 1883:1883 -p 8081:8081 -p 18083:18083 \
-    -e EMQX_LOADED_PLUGINS="emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia" \
-    -e EMQX_AUTH__MNESIA__AS="clientid" \
-    emqx/emqx:4.2.7
+# acl.conf
+
+%% Allow "dashboard" users to subscribe to "$SYS/#" topics
+{allow, {user, "dashboard"}, subscribe, ["$SYS/#"]}.
+
+%% Allow users with IP address "127.0.0.1" to publish/subscribe to topics "$SYS/#", "#"
+{allow, {ipaddr, "127.0.0.1"}, pubsub, ["$SYS/#", "#"]}.
+
+%% Deny "All Users" subscribe to "$SYS/#" "#" Topics
+{deny, all, subscribe, ["$SYS/#", {eq, "#"}]}.
+
+%% Deny any other publish/subscribe operation
+{deny, all}.
 ```
 
 ### Service API
