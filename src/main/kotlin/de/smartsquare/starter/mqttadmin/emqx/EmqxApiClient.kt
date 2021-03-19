@@ -74,7 +74,6 @@ open class EmqxApiClient(
         } catch (e: RestClientException) {
             ClientActionResult(success = false, message = e.message)
         }
-
     }
 
     private fun deleteAclRules(clientId: String) {
