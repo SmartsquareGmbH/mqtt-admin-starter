@@ -3,6 +3,8 @@ package de.smartsquare.starter.mqttadmin.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.starter.mqttadmin.Infrastructure
+import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.PUB
+import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.SUB
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
 import org.amshove.kluent.shouldBeFalse
@@ -31,7 +33,7 @@ class ClientServiceTest : Infrastructure() {
     private val aclRule = AclRule(
         login = clientId,
         topic = "testTopic/#",
-        action = AclRule.TopicAction.SUB,
+        action = SUB,
         allow = true
     )
 
@@ -83,6 +85,31 @@ class ClientServiceTest : Infrastructure() {
         clientService.registerClient(clientId, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
         val result = clientService.unregisterClient(clientId)
+        result.isSuccessful()
+    }
+
+    @Test
+    fun `adds acl rule`() {
+        val result = clientService.addAclRules(aclRule)
+        result.isSuccessful()
+    }
+
+    @Test
+    fun `adds multiple acl rules`() {
+        val result = clientService.addAclRules(aclRule, aclRule.copy(topic = "anotherTopic"))
+        result.isSuccessful()
+    }
+
+    @Test
+    fun `deletes all acl rules for a client on a topic`() {
+        clientService.registerClient(
+            clientId,
+            password,
+            aclRule.copy(action = SUB, allow = true),
+            aclRule.copy(action = PUB, allow = false)
+        )
+
+        val result = clientService.deleteAclRules(clientId, aclRule.topic)
         result.isSuccessful()
     }
 

@@ -51,6 +51,31 @@ open class EmqxApiClient(
         }
     }
 
+    override fun addAclRules(vararg aclRule: AclRule): ClientActionResult {
+        return try {
+            if (aclRule.isNotEmpty()) {
+                post(aclRuleUrl, aclRule.map { it.convertToTransferObject() })
+            }
+
+            ClientActionResult(success = true)
+        } catch (e: RestClientException) {
+            ClientActionResult(success = false, message = e.message)
+        }
+    }
+
+    /**
+     * @return a successful result even if the acl rule is not existing
+     */
+    override fun deleteAclRules(clientId: String, topic: String): ClientActionResult {
+        return try {
+            restTemplate.delete("$aclRuleUrl/$clientId/{topic}", topic)
+
+            ClientActionResult(success = true)
+        } catch (e: RestClientException) {
+            ClientActionResult(success = false, message = e.message)
+        }
+    }
+
     private fun deleteAclRules(clientId: String) {
         val aclRules = getAclRules(clientId).data!!
 

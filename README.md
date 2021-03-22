@@ -57,12 +57,11 @@ services:
 class TestClientRegistration(private val clientService: ClientService) {
     
     fun register() {
-        
-        // Registers a client to authenticate via clientId and password. 
+        // Registers a client to authenticate via clientId and password
         // Can consume a various number of acl rules: 
-        // AclRule(login: String, topic: String, action: String, allow: Boolean)
-        // Where login is some clientId and action is "pub"|"sub"|"pubsub"
-        // Returns RegistrationResult(success: Boolean, message: String?)
+        // AclRule(login: String, topic: String, action: TopicAction, allow: Boolean)
+        // Where login is some clientId and action is PUB|SUB|PUBSUB
+        // Returns ClientActionResult(success: Boolean, message: String?)
         clientService.registerClient(
             clientId = "testClientId",
             password = "password"
@@ -70,9 +69,27 @@ class TestClientRegistration(private val clientService: ClientService) {
     }
     
     fun unregister() {
-        
-        // Returns RegistrationResult(success: Boolean, message: String?)
+        // Returns ClientActionResult(success: Boolean, message: String?)
         clientService.unregisterClient("testClientId") 
+    }
+    
+    fun addAclRules() {
+        // Adds a various number of acl rules
+        // Returns ClientActionResult(success: Boolean, message: String?)
+        clientService.addAclRules(
+            AclRule(
+                login = "testClientId",
+                topic = "testTopic/#",
+                action = TopicAction.PUB,
+                allow = true
+            )
+        )
+    }
+    
+    fun deleteAclRules() {
+        // Deletes all acl rules for the client on the given topic
+        // Returns ClientActionResult(success: Boolean, message: String?)
+        clientService.deleteAclRules(clientId = "testClientId", topic = "testTopic/#")
     }
 }
 ```
