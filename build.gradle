@@ -7,6 +7,8 @@ buildscript {
         jacksonVersion = "2.12.1"
         springBootVersion = "2.4.2"
         kluentVersion = "1.65"
+        dokkaVersion = "1.4.30"
+        dependencyManagementVersion = "1.0.11.RELEASE"
     }
 
     repositories {
@@ -19,31 +21,29 @@ buildscript {
 }
 
 plugins {
-    id 'maven'
     id 'signing'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'io.spring.dependency-management' version "$dependencyManagementVersion"
+    id "org.jetbrains.dokka" version "$dokkaVersion"
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 java {
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+    withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
         jvmTarget = javaVersion.toString()
     }
-}
-
-signing {
-    sign configurations.archives
 }
 
 dependencies {
@@ -63,73 +63,84 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.15.2"
 }
 
+dokkaHtml {
+    outputDirectory.set(javadoc.destinationDir)
+    dokkaSourceSets {
+        named("main") {
+            jdkVersion.set(javaVersion)
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(new URL("https://github.com/SmartsquareGmbH/mqtt-admin-starter/blob/master/src/main/kotlin"))
+                remoteLineSuffix.set("#L")
+            }
+        }
+    }
+}
+
+tasks.withType(Javadoc).all {
+    it.dependsOn dokkaHtml
+}
+
 group = "de.smartsquare"
-archivesBaseName = "mqtt-admin-starter"
 version = "0.9.1"
 description = "Spring Boot Starter providing admin functionality for brokers."
 
 publishing {
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/SmartsquareGmbH/mqtt-admin-starter")
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+                username = project.findProperty("gpr.ossrhUser") ?: System.getenv("OSSRHUSER")
+                password = project.findProperty("gpr.ossrhPassword") ?: System.getenv("OSSRHPASSWORD")
             }
         }
     }
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             version = System.getenv("GITHUB_VERSION") ?: project.version
 
-            from(components.java)
+            artifactId = 'mqtt-admin-starter'
+
+            from components.java
+
+            pom {
+                name = 'Mqtt-Admin-Starter'
+                description = 'Spring Boot Starter providing admin functionality for brokers.'
+                url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'lschuer'
+                        name = 'Leonie Schürstedt'
+                        email = 'schuerstedt@smartsquare.de'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
+                    developerConnection = 'scm:git:ssh://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
+                    url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+                }
+                organization {
+                    name = 'Smartsquare GmbH'
+                    url = 'https://github.com/SmartsquareGmbH'
+                }
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter/issues'
+                }
+            }
         }
     }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: project.findProperty("gpr.ossrhUser") ?: System.getenv("OSSRHUSER"), password: project.findProperty("gpr.ossrhPassword") ?: System.getenv("OSSRHPASSWORD"))
-            }
-
-            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: project.findProperty("gpr.ossrhUser") ?: System.getenv("OSSRHUSER"), password: project.findProperty("gpr.ossrhPassword") ?: System.getenv("OSSRHPASSWORD"))
-            }
-
-            pom.project {
-                name 'Mqtt-Admin-Starter'
-                packaging 'jar'
-                description 'Spring Boot Starter providing admin functionality for brokers.'
-                url 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
-
-                scm {
-                    connection 'scm:git:https://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
-                    developerConnection 'scm:git:ssh://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
-                    url 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
-                }
-
-                licenses {
-                    license {
-                        name 'MIT License'
-                        url 'https://opensource.org/licenses/MIT'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'lschuer'
-                        name 'Leonie Schürstedt'
-                        email 'schuerstedt@smartsquare.de'
-                    }
-                }
-            }
-        }
-    }
+signing {
+    sign publishing.publications.mavenJava
 }
 
 test {
