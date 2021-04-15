@@ -88,8 +88,6 @@ publishing {
     }
 }
 
-// TODO have a look here: https://itnext.io/publishing-artifact-to-maven-central-b160634e5268
-
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -106,7 +104,6 @@ uploadArchives {
             pom.project {
                 name 'Mqtt-Admin-Starter'
                 packaging 'jar'
-                // optionally artifactId can be defined here
                 description 'Spring Boot Starter providing admin functionality for brokers.'
                 url 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
 
@@ -119,7 +116,7 @@ uploadArchives {
                 licenses {
                     license {
                         name 'MIT License'
-                        url 'https://opensource.org/licenses/MIT' // TODO or https://github.com/SmartsquareGmbH/mqtt-admin-starter/blob/main/LICENSE.md ?
+                        url 'https://opensource.org/licenses/MIT'
                     }
                 }
 
