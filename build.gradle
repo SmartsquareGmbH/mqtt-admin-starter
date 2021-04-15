@@ -82,7 +82,7 @@ tasks.withType(Javadoc).all {
 }
 
 group = "de.smartsquare"
-version = "0.9.1"
+version = System.getenv("GITHUB_VERSION") ?: "1.0.0-SNAPSHOT"
 description = "Spring Boot Starter providing admin functionality for brokers."
 
 publishing {
@@ -97,8 +97,6 @@ publishing {
     }
     publications {
         mavenJava(MavenPublication) {
-            version = System.getenv("GITHUB_VERSION") ?: project.version
-
             artifactId = 'mqtt-admin-starter'
 
             from components.java

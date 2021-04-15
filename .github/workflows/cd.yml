@@ -3,6 +3,7 @@ name: CD
 on:
   release:
     types: [ created ]
+  push:
 
 jobs:
   publish-maven-artifact:
@@ -25,15 +26,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle
 
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Create gradle.properties
+        run: |
+          cat <<EOT >> ~/.gradle/gradle.properties
+          signing.keyId=${{ steps.import_gpg.outputs.fingerprint }}
+          signing.password=${{ secrets.GPG_PASSPHRASE }}
+          signing.secretKeyRingFile=~/.gnupg/secring.gpg
+          EOT
+
       - name: Check
         run: ./gradlew check
 
-      - name: Publish
-        run: ./gradlew publishMavenPublicationToGitHubPackagesRepository
-        env:
-          USERNAME: ${{ secrets.USERNAME }}
-          TOKEN: ${{ secrets.TOKEN }}
-          GITHUB_VERSION: ${{ github.event.release.tag_name }}
+#      - name: Publish
+#        run: ./gradlew publishMavenJavaPublicationToMavenRepository
+#        env:
+#          OSSRHUSER: ${{ secrets.OSSRHUSER }}
+#          OSSRHPASSWORD: ${{ secrets.OSSRHPASSWORD }}
+#          GITHUB_VERSION: ${{ github.event.release.tag_name }}
 
       - name: Upload Gradle reports
         uses: actions/upload-artifact@v2.1.3
