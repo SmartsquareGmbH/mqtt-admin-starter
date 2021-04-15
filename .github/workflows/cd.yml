@@ -3,7 +3,6 @@ name: CD
 on:
   release:
     types: [ created ]
-  push:
 
 jobs:
   publish-maven-artifact:
@@ -39,18 +38,11 @@ jobs:
           signing.secretKeyRingFile=/home/runner/.gnupg/secring.gpg
           EOT
 
-#      - name: Check
-#        run: ./gradlew check
+      - name: Check
+        run: ./gradlew check
 
-#      - name: Publish
-#        run: ./gradlew publishMavenJavaPublicationToMavenRepository
-#        env:
-#          OSSRHUSER: ${{ secrets.OSSRHUSER }}
-#          OSSRHPASSWORD: ${{ secrets.OSSRHPASSWORD }}
-#          GITHUB_VERSION: ${{ github.event.release.tag_name }}
-#
       - name: Publish
-        run: ./gradlew publishToMavenLocal
+        run: ./gradlew publishMavenJavaPublicationToMavenRepository
         env:
           OSSRHUSER: ${{ secrets.OSSRHUSER }}
           OSSRHPASSWORD: ${{ secrets.OSSRHPASSWORD }}
