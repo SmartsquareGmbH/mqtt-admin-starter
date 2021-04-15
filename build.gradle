@@ -19,6 +19,8 @@ buildscript {
 }
 
 plugins {
+    id 'maven'
+    id 'signing'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -40,6 +42,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     }
 }
 
+signing {
+    sign configurations.archives
+}
+
 dependencies {
     implementation "org.springframework.boot:spring-boot:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
@@ -57,9 +63,10 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.15.2"
 }
 
-group = 'de.smartsquare'
-version = '1.0'
-description = 'Spring Boot Starter providing admin functionality for brokers.'
+group = "de.smartsquare"
+archivesBaseName = "mqtt-admin-starter"
+version = "0.9.1"
+description = "Spring Boot Starter providing admin functionality for brokers."
 
 publishing {
     repositories {
@@ -77,6 +84,53 @@ publishing {
             version = System.getenv("GITHUB_VERSION") ?: project.version
 
             from(components.java)
+        }
+    }
+}
+
+// TODO have a look here: https://itnext.io/publishing-artifact-to-maven-central-b160634e5268
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: project.findProperty("gpr.ossrhUser") ?: System.getenv("OSSRHUSER"), password: project.findProperty("gpr.ossrhPassword") ?: System.getenv("OSSRHPASSWORD"))
+            }
+
+            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: project.findProperty("gpr.ossrhUser") ?: System.getenv("OSSRHUSER"), password: project.findProperty("gpr.ossrhPassword") ?: System.getenv("OSSRHPASSWORD"))
+            }
+
+            pom.project {
+                name 'Mqtt-Admin-Starter'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Spring Boot Starter providing admin functionality for brokers.'
+                url 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+
+                scm {
+                    connection 'scm:git:https://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
+                    developerConnection 'scm:git:ssh://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
+                    url 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://opensource.org/licenses/MIT' // TODO or https://github.com/SmartsquareGmbH/mqtt-admin-starter/blob/main/LICENSE.md ?
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'lschuer'
+                        name 'Leonie Schürstedt'
+                        email 'schuerstedt@smartsquare.de'
+                    }
+                }
+            }
         }
     }
 }
