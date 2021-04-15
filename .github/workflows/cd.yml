@@ -38,7 +38,7 @@ jobs:
           cat <<EOT >> ~/.gradle/gradle.properties
           signing.keyId=${{ steps.import_gpg.outputs.fingerprint }}
           signing.password=${{ secrets.GPG_PASSPHRASE }}
-          signing.secretKeyRingFile=~/.gnupg/secring.gpg
+          signing.secretKeyRingFile=/home/runner/.gnupg/secring.gpg
           EOT
 
       - name: Check
