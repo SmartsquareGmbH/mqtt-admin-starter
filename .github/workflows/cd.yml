@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: 14
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-passphrase: GPG_PASSPHRASE
 
       - name: Setup Gradle cache
         uses: actions/cache@v2.1.0
