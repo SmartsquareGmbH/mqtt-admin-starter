@@ -50,13 +50,6 @@ jobs:
 
       - name: Upload Gradle reports
         uses: actions/upload-artifact@v2.1.3
-        if: success()
-        with:
-          name: m2 Repository
-          path: "~/.m2/repository/de/smartsquare"
-
-      - name: Upload Gradle reports
-        uses: actions/upload-artifact@v2.1.3
         if: failure()
         with:
           name: Gradle Reports
