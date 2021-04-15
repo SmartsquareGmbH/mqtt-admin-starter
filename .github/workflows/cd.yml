@@ -35,8 +35,8 @@ jobs:
 #          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
 #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-#      - name: Export GPG secring
-#        run: gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+      - name: Export GPG secring
+        run: gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
 
       - name: Create gradle.properties
         run: |
