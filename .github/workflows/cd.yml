@@ -33,16 +33,19 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Export GPG secring
+        run: gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+
       - name: Create gradle.properties
         run: |
           cat <<EOT >> ~/.gradle/gradle.properties
-          signing.keyId=${{ steps.import_gpg.outputs.fingerprint }}
+          signing.keyId=${{ steps.import_gpg.outputs.keyid }}
           signing.password=${{ secrets.GPG_PASSPHRASE }}
           signing.secretKeyRingFile=/home/runner/.gnupg/secring.gpg
           EOT
 
-      - name: Check
-        run: ./gradlew check
+#      - name: Check
+#        run: ./gradlew check
 
 #      - name: Publish
 #        run: ./gradlew publishMavenJavaPublicationToMavenRepository
