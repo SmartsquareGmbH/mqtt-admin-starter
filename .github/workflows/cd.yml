@@ -36,7 +36,7 @@ jobs:
 #          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Export GPG secring
-        run: echo ${{ secrets.GPG_PASSPHRASE }} | gpg --batch --yes --passphrase-fd 0 --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+        run: echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
 
 #--pinentry-mode loopback --no-tty
 
