@@ -37,7 +37,7 @@ jobs:
 
       - name: Export GPG secring
         run: |
-          echo "GPG_TTY=$(tty)" >> $GITHUB_ENV
+          export GPG_TTY=$(tty)
           gpg --pinentry-mode loopback --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
 
       - name: Create gradle.properties
