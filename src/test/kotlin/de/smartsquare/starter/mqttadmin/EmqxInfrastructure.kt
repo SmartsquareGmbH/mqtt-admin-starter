@@ -13,6 +13,7 @@ abstract class EmqxInfrastructure {
             .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_dashboard,emqx_auth_username,emqx_auth_mnesia")
             .withEnv("EMQX_AUTH__MNESIA__AS", "username")
             .withEnv("EMQX_ALLOW_ANONYMOUS", "false")
+            .withEnv("WAIT_FOR_ERLANG", "60")
             .withClasspathResourceMapping(
                 "acl.conf",
                 "/opt/emqx/etc/acl.conf",
