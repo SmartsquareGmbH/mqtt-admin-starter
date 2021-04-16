@@ -142,10 +142,9 @@ nexusPublishing {
 }
 
 signing {
-    def signingKeyId = findProperty("signingKeyId") ?: System.getenv("GPG_KEY_ID")
     def signingKey = findProperty("signingKey") ?: System.getenv("GPG_PRIVATE_KEY")
     def signingPassword = findProperty("signingPassword") ?: System.getenv("GPG_PASSPHRASE")
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.mavenJava
 }
 
