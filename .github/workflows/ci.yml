@@ -22,9 +22,9 @@ jobs:
         uses: actions/cache@v2.1.0
         with:
           path: ~/.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle') }}
+          key: ${{ runner.os }}-${{ matrix.java }}-gradle-${{ hashFiles('build.gradle') }}
           restore-keys: |
-            ${{ runner.os }}-gradle
+            ${{ runner.os }}-${{ matrix.java }}-gradle
 
       - name: Check
         run: ./gradlew check

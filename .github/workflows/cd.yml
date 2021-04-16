@@ -23,9 +23,9 @@ jobs:
         uses: actions/cache@v2.1.0
         with:
           path: ~/.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle') }}
+          key: ${{ runner.os }}-8-gradle-${{ hashFiles('build.gradle') }}
           restore-keys: |
-            ${{ runner.os }}-gradle
+            ${{ runner.os }}-8-gradle
 
       - name: Export GPG secring
         run: echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --no-tty --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
