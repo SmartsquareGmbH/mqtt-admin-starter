@@ -2,6 +2,20 @@
 
 This project contains a basic service to register and unregister clients to authenticate to an MQTT broker.
 
+## Getting started
+
+### Gradle Configuration
+
+```groovy
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation "de.smartsquare:mqtt-admin-starter:0.9.1"
+}
+```
+
 ### Application Properties
 For EMQ X Broker:
 
