@@ -3,7 +3,6 @@ name: CD
 on:
   release:
     types: [ created ]
-  push:
 
 jobs:
   publish-maven-artifact:
@@ -30,20 +29,12 @@ jobs:
 
       - name: Export GPG secring
         run: echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --no-tty --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
-#
-#      - name: Create gradle.properties
-#        run: |
-#          cat <<EOT >> ~/.gradle/gradle.properties
-#          signing.keyId=88B72FCF
-#          signing.password=${{ secrets.GPG_PASSPHRASE }}
-#          signing.secretKeyRingFile=/home/runner/.gnupg/secring.gpg
-#          EOT
 
       - name: Check
         run: ./gradlew check
 
       - name: Publish
-        run: ./gradlew publishMavenJavaPublicationToMavenLocal -Psigning.keyId="${{secrets.GPG_KEY_ID}}" -Psigning.password="${{secrets.GPG_PASSPHRASE}}" -Psigning.secretKeyRingFile=$(echo ~/.gnupg/secring.gpg)
+        run: ./gradlew publishMavenJavaPublicationToMavenRepository -Psigning.keyId="${{secrets.GPG_KEY_ID}}" -Psigning.password="${{secrets.GPG_PASSPHRASE}}" -Psigning.secretKeyRingFile=$(echo ~/.gnupg/secring.gpg)
         env:
           OSSRHUSER: ${{ secrets.OSSRHUSER }}
           OSSRHPASSWORD: ${{ secrets.OSSRHPASSWORD }}
