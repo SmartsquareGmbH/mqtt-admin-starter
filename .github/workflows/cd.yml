@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew check
 
       - name: Publish
-        run: ./gradlew publishMavenJavaPublicationToMavenRepository -Psigning.keyId="${{secrets.GPG_KEY_ID}}" -Psigning.password="${{secrets.GPG_PASSPHRASE}}" -Psigning.secretKeyRingFile=$(echo ~/.gnupg/secring.gpg)
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Psigning.keyId="${{secrets.GPG_KEY_ID}}" -Psigning.password="${{secrets.GPG_PASSPHRASE}}" -Psigning.secretKeyRingFile=$(echo ~/.gnupg/secring.gpg)
         env:
           OSSRHUSER: ${{ secrets.OSSRHUSER }}
           OSSRHPASSWORD: ${{ secrets.OSSRHPASSWORD }}
