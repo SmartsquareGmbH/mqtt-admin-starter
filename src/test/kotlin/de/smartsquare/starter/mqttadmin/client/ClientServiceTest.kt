@@ -2,7 +2,7 @@ package de.smartsquare.starter.mqttadmin.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.smartsquare.starter.mqttadmin.Infrastructure
+import de.smartsquare.starter.mqttadmin.EmqxInfrastructure
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.PUB
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.SUB
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
@@ -19,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @Testcontainers
 @SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class, ClientServiceTest.JacksonConfiguration::class])
-class ClientServiceTest : Infrastructure() {
+class ClientServiceTest : EmqxInfrastructure() {
 
     @Autowired
     private lateinit var clientService: ClientService
@@ -27,11 +27,11 @@ class ClientServiceTest : Infrastructure() {
     @Autowired
     private lateinit var emqxApiClient: EmqxApiClient
 
-    private val clientId = "testClientId"
+    private val username = "testusername"
     private val password = "test"
 
     private val aclRule = AclRule(
-        login = clientId,
+        login = username,
         topic = "testTopic/#",
         action = SUB,
         allow = true
@@ -39,52 +39,52 @@ class ClientServiceTest : Infrastructure() {
 
     @AfterEach
     fun cleanUp() {
-        emqxApiClient.unregisterClient(clientId)
+        emqxApiClient.unregisterClient(username)
     }
 
     @Test
     fun `registers client without acl rules`() {
-        val result = clientService.registerClient(clientId, password)
+        val result = clientService.registerClient(username, password)
 
         result.isSuccessful()
     }
 
     @Test
     fun `registers client with acl rules`() {
-        val result = clientService.registerClient(clientId, password, aclRule, aclRule.copy(topic = "anotherTopic"))
+        val result = clientService.registerClient(username, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
         result.isSuccessful()
     }
 
     @Test
     fun `should not register client twice`() {
-        clientService.registerClient(clientId, password)
+        clientService.registerClient(username, password)
 
-        val result = clientService.registerClient(clientId, password)
+        val result = clientService.registerClient(username, password)
         result.isNotSuccessful()
     }
 
     @Test
     fun `should unregister client`() {
-        clientService.registerClient(clientId, password)
+        clientService.registerClient(username, password)
 
-        val result = clientService.unregisterClient(clientId)
+        val result = clientService.unregisterClient(username)
         result.isSuccessful()
     }
 
     @Test
     fun `should unregister client and delete single acl rule`() {
-        clientService.registerClient(clientId, password, aclRule)
+        clientService.registerClient(username, password, aclRule)
 
-        val result = clientService.unregisterClient(clientId)
+        val result = clientService.unregisterClient(username)
         result.isSuccessful()
     }
 
     @Test
     fun `should unregister client and delete multiple acl rules`() {
-        clientService.registerClient(clientId, password, aclRule, aclRule.copy(topic = "anotherTopic"))
+        clientService.registerClient(username, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
-        val result = clientService.unregisterClient(clientId)
+        val result = clientService.unregisterClient(username)
         result.isSuccessful()
     }
 
@@ -103,13 +103,13 @@ class ClientServiceTest : Infrastructure() {
     @Test
     fun `deletes all acl rules for a client on a topic`() {
         clientService.registerClient(
-            clientId,
+            username,
             password,
             aclRule.copy(action = SUB, allow = true),
             aclRule.copy(action = PUB, allow = false)
         )
 
-        val result = clientService.deleteAclRules(clientId, aclRule.topic)
+        val result = clientService.deleteAclRules(username, aclRule.topic)
         result.isSuccessful()
     }
 

@@ -6,12 +6,12 @@ import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
 
-abstract class Infrastructure {
+abstract class EmqxInfrastructure {
 
     companion object {
         private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.2.7"))
-            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia")
-            .withEnv("EMQX_AUTH__MNESIA__AS", "clientid")
+            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_dashboard,emqx_auth_username,emqx_auth_mnesia")
+            .withEnv("EMQX_AUTH__MNESIA__AS", "username")
             .withEnv("EMQX_ALLOW_ANONYMOUS", "false")
             .withClasspathResourceMapping(
                 "acl.conf",

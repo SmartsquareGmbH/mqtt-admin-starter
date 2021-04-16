@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ClientData(
 
-    @JsonProperty("clientid")
-    val clientId: String,
+    @JsonProperty("username")
+    val username: String,
 
     val password: String,
 )

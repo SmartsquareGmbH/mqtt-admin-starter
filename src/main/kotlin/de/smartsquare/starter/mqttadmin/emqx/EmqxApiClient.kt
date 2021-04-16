@@ -19,7 +19,7 @@ open class EmqxApiClient(
     private val objectMapper: ObjectMapper
 ) : BrokerApiClient {
 
-    private val authClientUrl = "/api/v4/auth_clientid"
+    private val authClientUrl = "/api/v4/auth_username"
     private val aclRuleUrl = "/api/v4/mqtt_acl"
 
     override fun registerClient(clientData: ClientData, vararg aclRule: AclRule): ClientActionResult {
