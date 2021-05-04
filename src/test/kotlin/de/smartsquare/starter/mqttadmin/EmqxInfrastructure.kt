@@ -2,23 +2,17 @@ package de.smartsquare.starter.mqttadmin
 
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
 
 abstract class EmqxInfrastructure {
 
     companion object {
-        private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.2.7"))
-            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_dashboard,emqx_auth_username,emqx_auth_mnesia")
+        private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.2.10"))
+            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_auth_username,emqx_auth_mnesia")
             .withEnv("EMQX_AUTH__MNESIA__AS", "username")
             .withEnv("EMQX_ALLOW_ANONYMOUS", "false")
             .withEnv("WAIT_FOR_ERLANG", "60")
-            .withClasspathResourceMapping(
-                "acl.conf",
-                "/opt/emqx/etc/acl.conf",
-                BindMode.READ_ONLY
-            )
             .withExposedPorts(1883, 8081, 18083)
             .waitingFor(Wait.forLogMessage(".*is running now!.*", 1))
 
