@@ -1,6 +1,11 @@
 package de.smartsquare.starter.mqttadmin.client
 
-data class ClientActionResult (
-    val success: Boolean,
-    val message: String? = null
-)
+sealed class ClientActionResult {
+    object Success : ClientActionResult()
+
+    data class Failure(
+        val code: Int? = null,
+        val message: String? = null,
+        val error: Exception? = null
+    ) : ClientActionResult()
+}
