@@ -4,6 +4,8 @@ buildscript {
 
         junitVersion = "5.7.1"
         kotlinVersion = "1.4.30"
+        detektVersion = "1.16.0"
+        ktlintVersion = "10.0.0"
         jacksonVersion = "2.12.1"
         springBootVersion = "2.4.2"
         kluentVersion = "1.65"
@@ -25,8 +27,11 @@ plugins {
     id 'signing'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
-    id 'io.spring.dependency-management' version "$dependencyManagementVersion"
+    id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
     id "org.jetbrains.dokka" version "$dokkaVersion"
+    id "io.gitlab.arturbosch.detekt" version "$detektVersion"
+    id "org.jlleitschuh.gradle.ktlint" version "$ktlintVersion"
+    id 'io.spring.dependency-management' version "$dependencyManagementVersion"
     id "io.github.gradle-nexus.publish-plugin" version "$gradleNexusVersion"
 }
 
@@ -38,6 +43,7 @@ repositories {
 java {
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+
     withJavadocJar()
     withSourcesJar()
 }
@@ -45,6 +51,7 @@ java {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
         jvmTarget = javaVersion.toString()
+        allWarningsAsErrors = true
     }
 }
 
@@ -77,6 +84,16 @@ dokkaHtml {
             }
         }
     }
+}
+
+detekt {
+    config = files("${project.rootDir}/detekt.yml")
+
+    buildUponDefaultConfig = true
+}
+
+ktlint {
+    outputToConsole = true
 }
 
 tasks.withType(Javadoc).all {

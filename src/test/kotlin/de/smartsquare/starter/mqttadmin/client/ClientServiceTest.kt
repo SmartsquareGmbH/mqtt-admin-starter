@@ -1,24 +1,20 @@
 package de.smartsquare.starter.mqttadmin.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.starter.mqttadmin.EmqxInfrastructure
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.PUB
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.SUB
+import de.smartsquare.starter.mqttadmin.client.ClientActionResult.Failure
+import de.smartsquare.starter.mqttadmin.client.ClientActionResult.Success
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
-import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeInstanceOf
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.testcontainers.junit.jupiter.Testcontainers
 
-@Testcontainers
-@SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class, ClientServiceTest.JacksonConfiguration::class])
+@SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class])
 class ClientServiceTest : EmqxInfrastructure() {
 
     @Autowired
@@ -46,14 +42,14 @@ class ClientServiceTest : EmqxInfrastructure() {
     fun `registers client without acl rules`() {
         val result = clientService.registerClient(username, password)
 
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
     fun `registers client with acl rules`() {
         val result = clientService.registerClient(username, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
@@ -61,7 +57,7 @@ class ClientServiceTest : EmqxInfrastructure() {
         clientService.registerClient(username, password)
 
         val result = clientService.registerClient(username, password)
-        result.isNotSuccessful()
+        result shouldBeInstanceOf Failure::class
     }
 
     @Test
@@ -69,7 +65,7 @@ class ClientServiceTest : EmqxInfrastructure() {
         clientService.registerClient(username, password)
 
         val result = clientService.unregisterClient(username)
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
@@ -77,7 +73,7 @@ class ClientServiceTest : EmqxInfrastructure() {
         clientService.registerClient(username, password, aclRule)
 
         val result = clientService.unregisterClient(username)
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
@@ -85,19 +81,19 @@ class ClientServiceTest : EmqxInfrastructure() {
         clientService.registerClient(username, password, aclRule, aclRule.copy(topic = "anotherTopic"))
 
         val result = clientService.unregisterClient(username)
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
     fun `adds acl rule`() {
         val result = clientService.addAclRules(aclRule)
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
     fun `adds multiple acl rules`() {
         val result = clientService.addAclRules(aclRule, aclRule.copy(topic = "anotherTopic"))
-        result.isSuccessful()
+        result shouldBe Success
     }
 
     @Test
@@ -110,21 +106,6 @@ class ClientServiceTest : EmqxInfrastructure() {
         )
 
         val result = clientService.deleteAclRules(username, aclRule.topic)
-        result.isSuccessful()
-    }
-
-    @Configuration
-    open class JacksonConfiguration {
-
-        @Bean
-        open fun objectMapper(): ObjectMapper = jacksonObjectMapper().findAndRegisterModules()
-    }
-
-    private fun ClientActionResult.isSuccessful(): Boolean {
-        return this.success.shouldBeTrue()
-    }
-
-    private fun ClientActionResult.isNotSuccessful(): Boolean {
-        return this.success.shouldBeFalse()
+        result shouldBe Success
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConfigurationProperties(prefix = "emqx.api")
 @ConstructorBinding
 data class EmqxApiProperties(
+    val schema: String = "http",
     val host: String,
     val port: String,
     val username: String,
