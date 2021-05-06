@@ -1,7 +1,6 @@
 package de.smartsquare.starter.mqttadmin.emqx
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
 import org.springframework.beans.factory.annotation.Qualifier
@@ -20,21 +19,18 @@ class EmqxApiConfiguration {
 
     @Bean
     @Qualifier("emqx")
-    fun restTemplate(
-        config: EmqxApiProperties,
-        @Qualifier("emqx") objectMapper: ObjectMapper
-    ): RestTemplate = RestTemplateBuilder()
-        .rootUri("${config.schema}://${config.host}:${config.port}")
-        .basicAuthentication(config.username, config.password)
-        .messageConverters(MappingJackson2HttpMessageConverter(objectMapper))
-        .build()
+    fun restTemplate(config: EmqxApiProperties): RestTemplate {
+        val objectMapper = jacksonObjectMapper()
+            .findAndRegisterModules()
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+
+        return RestTemplateBuilder()
+            .rootUri("${config.schema}://${config.host}:${config.port}")
+            .basicAuthentication(config.username, config.password)
+            .messageConverters(MappingJackson2HttpMessageConverter(objectMapper))
+            .build()
+    }
 
     @Bean
     fun emqxApiClient(@Qualifier("emqx") restTemplate: RestTemplate): BrokerApiClient = EmqxApiClient(restTemplate)
-
-    @Bean
-    @Qualifier("emqx")
-    fun emqxObjectMapper(): ObjectMapper = jacksonObjectMapper()
-        .findAndRegisterModules()
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 }
