@@ -1,6 +1,8 @@
 # Mqtt Admin Starter
 
-This project contains a basic service to register and unregister clients to authenticate to an MQTT broker.
+This project contains a basic service to register and unregister clients to authenticate to an MQTT broker for Spring
+Boot. As of the current version only support for EMQ X is implemented, but other brokers could be implemented by
+subclassing the `BrokerApiClient` interface.
 
 ## Getting started
 
@@ -8,15 +10,16 @@ This project contains a basic service to register and unregister clients to auth
 
 ```groovy
 repositories {
-  mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-  implementation "de.smartsquare:mqtt-admin-starter:0.9.9"
+    implementation "de.smartsquare:mqtt-admin-starter:0.9.9"
 }
 ```
 
 ### Application Properties
+
 For EMQ X Broker:
 
 ```properties
@@ -27,69 +30,59 @@ emqx.api.password=public
 ```
 
 ### Docker Setup
+
 For EMQ X Broker:
 
-```shell
+```yaml
 # docker-compose.yml
 
 version: '3'
 services:
   emqx:
-    image: emqx/emqx:4.2.7
+    image: emqx/emqx:4.2.10
     ports:
       - 1883:1883
       - 8081:8081
       - 18083:18083
     environment:
       - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
-      - EMQX_AUTH__MNESIA__AS=clientid
+      - EMQX_AUTH__MNESIA__AS=username
       - EMQX_ALLOW_ANONYMOUS=false
       - EMQX_ACL_NOMATCH=deny
-    volumes:
-      - ./acl.conf:/opt/emqx/etc/acl.conf:ro
-```
-
-```shell
-# acl.conf
-
-%% Allow "dashboard" users to subscribe to "$SYS/#" topics
-{allow, {user, "dashboard"}, subscribe, ["$SYS/#"]}.
-
-%% Allow users with IP address "127.0.0.1" to publish/subscribe to topics "$SYS/#", "#"
-{allow, {ipaddr, "127.0.0.1"}, pubsub, ["$SYS/#", "#"]}.
-
-%% Deny "All Users" subscribe to "$SYS/#" "#" Topics
-{deny, all, subscribe, ["$SYS/#", {eq, "#"}]}.
-
-%% Deny any other publish/subscribe operation
-{deny, all}.
 ```
 
 ### Service API
 
+All service calls return a `ClientActionResult` which can be either `Success` or `Failure`.
+
 ```kotlin
 class TestClientRegistration(private val clientService: ClientService) {
-    
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     fun register() {
         // Registers a client to authenticate via clientId and password
-        // Can consume a various number of acl rules: 
+        // Can consume a various number of acl rules:
         // AclRule(login: String, topic: String, action: TopicAction, allow: Boolean)
-        // Where login is some clientId and action is PUB|SUB|PUBSUB
-        // Returns ClientActionResult(success: Boolean, message: String?)
-        clientService.registerClient(
+        // Where login is some clientId and action is PUB|SUB|PUBSUB.
+        val result = clientService.registerClient(
             clientId = "testClientId",
             password = "password"
         )
+
+        if (result is Success) {
+            logger.info("Successfully registered client!")
+        } else {
+            logger.error("Failed to register client.", result.error)
+        }
     }
-    
+
     fun unregister() {
-        // Returns ClientActionResult(success: Boolean, message: String?)
-        clientService.unregisterClient("testClientId") 
+        clientService.unregisterClient("testClientId")
     }
-    
+
     fun addAclRules() {
-        // Adds a various number of acl rules
-        // Returns ClientActionResult(success: Boolean, message: String?)
+        // Adds a various number of acl rules.
         clientService.addAclRules(
             AclRule(
                 login = "testClientId",
@@ -99,10 +92,9 @@ class TestClientRegistration(private val clientService: ClientService) {
             )
         )
     }
-    
+
     fun deleteAclRules() {
-        // Deletes all acl rules for the client on the given topic
-        // Returns ClientActionResult(success: Boolean, message: String?)
+        // Deletes all acl rules for the client on the given topic.
         clientService.deleteAclRules(clientId = "testClientId", topic = "testTopic/#")
     }
 }
