@@ -3,15 +3,15 @@ buildscript {
         javaVersion = JavaVersion.VERSION_1_8
 
         junitVersion = "5.7.1"
-        kotlinVersion = "1.4.30"
+        kotlinVersion = "1.5.0"
         detektVersion = "1.16.0"
         ktlintVersion = "10.0.0"
         jacksonVersion = "2.12.1"
-        springBootVersion = "2.4.2"
+        springBootVersion = "2.4.5"
         kluentVersion = "1.65"
-        dokkaVersion = "1.4.30"
+        dokkaVersion = "1.4.32"
         dependencyManagementVersion = "1.0.11.RELEASE"
-        gradleNexusVersion = "1.0.0"
+        gradleNexusVersion = "1.1.0"
     }
 
     repositories {
@@ -24,14 +24,14 @@ buildscript {
 }
 
 plugins {
-    id 'signing'
-    id 'maven-publish'
+    id "signing"
+    id "maven-publish"
     id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
     id "org.jetbrains.dokka" version "$dokkaVersion"
     id "io.gitlab.arturbosch.detekt" version "$detektVersion"
     id "org.jlleitschuh.gradle.ktlint" version "$ktlintVersion"
-    id 'io.spring.dependency-management' version "$dependencyManagementVersion"
+    id "io.spring.dependency-management" version "$dependencyManagementVersion"
     id "io.github.gradle-nexus.publish-plugin" version "$gradleNexusVersion"
 }
 
@@ -56,6 +56,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+
     implementation "org.springframework.boot:spring-boot:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
@@ -107,40 +109,40 @@ description = "Spring Boot Starter providing admin functionality for brokers."
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'mqtt-admin-starter'
+            artifactId = "mqtt-admin-starter"
 
             from components.java
 
             pom {
-                name = 'Mqtt-Admin-Starter'
-                description = 'Spring Boot Starter providing admin functionality for brokers.'
-                url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+                name = "Mqtt-Admin-Starter"
+                description = "Spring Boot Starter providing admin functionality for brokers."
+                url = "https://github.com/SmartsquareGmbH/mqtt-admin-starter"
 
                 licenses {
                     license {
-                        name = 'MIT License'
-                        url = 'https://opensource.org/licenses/MIT'
+                        name = "MIT License"
+                        url = "https://opensource.org/licenses/MIT"
                     }
                 }
                 developers {
                     developer {
-                        id = 'lschuer'
-                        name = 'Leonie Schürstedt'
-                        email = 'schuerstedt@smartsquare.de'
+                        id = "lschuer"
+                        name = "Leonie Schürstedt"
+                        email = "schuerstedt@smartsquare.de"
                     }
                 }
                 scm {
-                    connection = 'scm:git:https://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
-                    developerConnection = 'scm:git:ssh://github.com/SmartsquareGmbH/mqtt-admin-starter.git'
-                    url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter'
+                    connection = "scm:git:https://github.com/SmartsquareGmbH/mqtt-admin-starter.git"
+                    developerConnection = "scm:git:ssh://github.com/SmartsquareGmbH/mqtt-admin-starter.git"
+                    url = "https://github.com/SmartsquareGmbH/mqtt-admin-starter"
                 }
                 organization {
-                    name = 'Smartsquare GmbH'
-                    url = 'https://github.com/SmartsquareGmbH'
+                    name = "Smartsquare GmbH"
+                    url = "https://github.com/SmartsquareGmbH"
                 }
                 issueManagement {
-                    system = 'GitHub'
-                    url = 'https://github.com/SmartsquareGmbH/mqtt-admin-starter/issues'
+                    system = "GitHub"
+                    url = "https://github.com/SmartsquareGmbH/mqtt-admin-starter/issues"
                 }
             }
         }
