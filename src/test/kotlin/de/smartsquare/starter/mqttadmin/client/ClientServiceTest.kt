@@ -8,7 +8,11 @@ import de.smartsquare.starter.mqttadmin.client.ClientActionResult.Success
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient
 import de.smartsquare.starter.mqttadmin.emqx.EmqxApiConfiguration
 import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeInstanceOf
+import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldHaveSingleItem
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -107,5 +111,29 @@ class ClientServiceTest : EmqxInfrastructure() {
 
         val result = clientService.deleteAclRules(username, aclRule.topic)
         result shouldBe Success
+    }
+
+    @Test
+    fun `gets client registration`() {
+        val registerResult = clientService.registerClient(username, password)
+        registerResult shouldBe Success
+
+        val result = clientService.getClientRegistrations()
+        result.shouldBeInstanceOf<ClientResult.Success<*>>()
+        result as ClientResult.Success
+        result.data.shouldHaveSingleItem()
+        result.data.first().login shouldBeEqualTo username
+        result.data.first().superuser.shouldBeTrue()
+    }
+
+    @Test
+    fun `gets multiple client registrations`() {
+        clientService.registerClient(username, password)
+        clientService.registerClient("test2", password)
+
+        val result = clientService.getClientRegistrations()
+        result.shouldBeInstanceOf<ClientResult.Success<*>>()
+        result as ClientResult.Success
+        result.data.shouldHaveSize(2)
     }
 }

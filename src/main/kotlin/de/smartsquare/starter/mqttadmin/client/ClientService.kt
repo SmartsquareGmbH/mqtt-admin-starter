@@ -7,6 +7,10 @@ class ClientService(private val brokerApiClient: BrokerApiClient) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    fun getClientRegistrations(): ClientResult<List<ClientRegistration>> {
+        return brokerApiClient.getClientRegistrations()
+    }
+
     fun registerClient(
         clientId: String,
         password: String,
