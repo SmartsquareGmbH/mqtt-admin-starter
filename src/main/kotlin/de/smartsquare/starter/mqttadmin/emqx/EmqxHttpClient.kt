@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate
 
 internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestTemplate) {
 
-    internal inline fun <reified T> get(
+    internal fun <T> get(
         url: String,
         typeRef: ParameterizedTypeReference<EmqxApiRequestResult<T>> = typeRef(),
         vararg variables: Any
@@ -60,7 +60,7 @@ internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestT
         evaluateResult(result)
     }
 
-    internal fun <T> evaluateResult(result: ResponseEntity<EmqxApiRequestResult<T>>) {
+    private fun <T> evaluateResult(result: ResponseEntity<EmqxApiRequestResult<T>>) {
         if (result.statusCode != HttpStatus.OK) {
             throw EmqxApiException(result.statusCodeValue, result.body.message)
         }

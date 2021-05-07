@@ -1,8 +1,11 @@
 package de.smartsquare.starter.mqttadmin.emqx
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
 /**
  *  [EMQ X HTTP API documentation](https://docs.emqx.io/en/broker/latest/advanced/http-api.html)
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class EmqxApiRequestResult<T>(
 
     /**

@@ -5,6 +5,8 @@ import de.smartsquare.starter.mqttadmin.client.AclRule
 import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
 import de.smartsquare.starter.mqttadmin.client.ClientActionResult
 import de.smartsquare.starter.mqttadmin.client.ClientData
+import de.smartsquare.starter.mqttadmin.client.ClientRegistration
+import de.smartsquare.starter.mqttadmin.client.ClientResult
 import de.smartsquare.starter.mqttadmin.typeRef
 import org.springframework.web.client.RestTemplate
 
@@ -16,6 +18,20 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
     }
 
     private val emqxHttpClient = EmqxHttpClient(restTemplate)
+
+    override fun getClientRegistrations(): ClientResult<List<ClientRegistration>> {
+        return try {
+            val result = emqxHttpClient.get(
+                authClientUrl,
+                typeRef<EmqxApiRequestResult<List<String>>>()
+            )
+
+            // EMQ X < 4.3 only supports getting the username.
+            ClientResult.Success(result.map { ClientRegistration(it, null, true) })
+        } catch (e: EmqxApiException) {
+            ClientResult.Failure(code = e.code, message = e.message, error = e)
+        }
+    }
 
     override fun registerClient(clientData: ClientData, vararg aclRule: AclRule): ClientActionResult {
         return try {
