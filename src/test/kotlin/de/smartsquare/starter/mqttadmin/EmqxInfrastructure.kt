@@ -13,9 +13,8 @@ abstract class EmqxInfrastructure {
         private val logger = LoggerFactory.getLogger(this::class.java)
         private val logConsumer get() = Slf4jLogConsumer(logger).withSeparateOutputStreams()
 
-        private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.2.10"))
-            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_auth_username,emqx_auth_mnesia")
-            .withEnv("EMQX_AUTH__MNESIA__AS", "username")
+        private val emqx = KGenericContainer(DockerImageName.parse("emqx/emqx:4.3.1"))
+            .withEnv("EMQX_LOADED_PLUGINS", "emqx_management,emqx_auth_mnesia")
             .withEnv("EMQX_ALLOW_ANONYMOUS", "false")
             .withEnv("WAIT_FOR_ERLANG", "60")
             .withExposedPorts(1883, 8081, 18083)

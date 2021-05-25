@@ -31,7 +31,7 @@ class ClientServiceTest : EmqxInfrastructure() {
     private val password = "test"
 
     private val aclRule = AclRule(
-        login = username,
+        username = username,
         topic = "testTopic/#",
         action = SUB,
         allow = true
@@ -122,7 +122,7 @@ class ClientServiceTest : EmqxInfrastructure() {
         result.shouldBeInstanceOf<ClientResult.Success<*>>()
         result as ClientResult.Success
         result.data.shouldHaveSingleItem()
-        result.data.first().login shouldBeEqualTo username
+        result.data.first().username shouldBeEqualTo username
         result.data.first().superuser.shouldBeTrue()
     }
 

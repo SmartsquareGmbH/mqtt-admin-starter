@@ -1,7 +1,7 @@
 package de.smartsquare.starter.mqttadmin.client
 
 data class AclRule(
-    val login: String,
+    val username: String,
     val topic: String,
     val action: TopicAction,
     val allow: Boolean

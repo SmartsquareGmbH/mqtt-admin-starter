@@ -1,12 +1,15 @@
 package de.smartsquare.starter.mqttadmin.emqx
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.smartsquare.starter.mqttadmin.client.AclRule
 import de.smartsquare.starter.mqttadmin.client.BrokerApiClient
 import de.smartsquare.starter.mqttadmin.client.ClientActionResult
 import de.smartsquare.starter.mqttadmin.client.ClientData
 import de.smartsquare.starter.mqttadmin.client.ClientRegistration
 import de.smartsquare.starter.mqttadmin.client.ClientResult
+import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient.EmqxAclRule.EmqxAccess.ALLOW
+import de.smartsquare.starter.mqttadmin.emqx.EmqxApiClient.EmqxAclRule.EmqxAccess.DENY
 import de.smartsquare.starter.mqttadmin.typeRef
 import org.springframework.web.client.RestTemplate
 
@@ -14,7 +17,7 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
 
     private companion object {
         private const val authClientUrl = "/api/v4/auth_username"
-        private const val aclRuleUrl = "/api/v4/mqtt_acl"
+        private const val aclRuleUrl = "/api/v4/acl"
     }
 
     private val emqxHttpClient = EmqxHttpClient(restTemplate)
@@ -23,11 +26,11 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
         return try {
             val result = emqxHttpClient.get(
                 authClientUrl,
-                typeRef<EmqxApiRequestResult<List<String>>>()
+                typeRef<EmqxApiRequestResult<List<EmqxClientRegistration>>>()
             )
 
-            // EMQ X < 4.3 only supports getting the username.
-            ClientResult.Success(result.map { ClientRegistration(it, null, true) })
+            // EMQ X currently only supports getting the username.
+            ClientResult.Success(result.map { ClientRegistration(it.username, null, true) })
         } catch (e: EmqxApiException) {
             ClientResult.Failure(code = e.code, message = e.message, error = e)
         }
@@ -50,10 +53,10 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
     /**
      * @return a successful result even if the client is not registered
      */
-    override fun unregisterClient(clientId: String): ClientActionResult {
+    override fun unregisterClient(username: String): ClientActionResult {
         return try {
-            emqxHttpClient.delete("$authClientUrl/$clientId")
-            deleteAclRules(clientId)
+            emqxHttpClient.delete("$authClientUrl/{username}", username)
+            deleteAclRules(username)
 
             ClientActionResult.Success
         } catch (e: EmqxApiException) {
@@ -76,9 +79,9 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
     /**
      * @return a successful result even if the acl rule is not existing
      */
-    override fun deleteAclRules(clientId: String, topic: String): ClientActionResult {
+    override fun deleteAclRules(username: String, topic: String): ClientActionResult {
         return try {
-            emqxHttpClient.delete("$aclRuleUrl/$clientId/{topic}", topic)
+            emqxHttpClient.delete("$aclRuleUrl/username/{username}/topic/{topic}", username, topic)
 
             ClientActionResult.Success
         } catch (e: EmqxApiException) {
@@ -86,34 +89,44 @@ class EmqxApiClient(restTemplate: RestTemplate) : BrokerApiClient {
         }
     }
 
-    private fun deleteAclRules(clientId: String) {
-        val topics = getAclRuleTopics(clientId)
+    private fun deleteAclRules(username: String) {
+        val topics = getAclRuleTopics(username)
 
         for (topic in topics) {
-            emqxHttpClient.delete("$aclRuleUrl/$clientId/{topic}", topic)
+            emqxHttpClient.delete("$aclRuleUrl/username/{username}/topic/{topic}", username, topic)
         }
     }
 
-    private fun getAclRuleTopics(clientId: String): List<String> {
+    private fun getAclRuleTopics(username: String): List<String> {
         return emqxHttpClient
-            .get("$aclRuleUrl/$clientId", typeRef<EmqxApiRequestResult<List<EmqxAclTopic>>>())
+            .get("$aclRuleUrl/username/{username}", typeRef<EmqxApiRequestResult<List<EmqxAclTopic>>>(), username)
             .mapNotNull { it.topic }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private data class EmqxAclTopic(val topic: String?)
 
+    private data class EmqxClientRegistration(val username: String)
+
     private data class EmqxAclRule(
-        val login: String,
+        val username: String,
         val topic: String,
         val action: String,
-        val allow: Boolean
-    )
+        val access: EmqxAccess
+    ) {
+        enum class EmqxAccess {
+            @JsonProperty("allow")
+            ALLOW,
+
+            @JsonProperty("deny")
+            DENY
+        }
+    }
 
     private fun AclRule.forEmqx() = EmqxAclRule(
-        login = this.login,
+        username = this.username,
         topic = this.topic,
         action = this.action.action,
-        allow = this.allow
+        access = if (this.allow) ALLOW else DENY
     )
 }

@@ -20,7 +20,7 @@ internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestT
         vararg variables: Any
     ): T {
         val result = try {
-            restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, typeRef, variables)
+            restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, typeRef, *variables)
         } catch (error: RestClientException) {
             throw EmqxApiException(message = "Failed to call EMQ X api $url", error = error)
         }
@@ -36,7 +36,7 @@ internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestT
             val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON }
             val body = HttpEntity(data, headers)
 
-            restTemplate.exchange(url, HttpMethod.POST, body, typeRef<EmqxApiRequestResult<Any>>(), variables)
+            restTemplate.exchange(url, HttpMethod.POST, body, typeRef<EmqxApiRequestResult<Any>>(), *variables)
         } catch (error: RestClientException) {
             throw EmqxApiException(message = "Failed to call EMQ X api $url", error = error)
         }
@@ -51,7 +51,7 @@ internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestT
                 HttpMethod.DELETE,
                 HttpEntity.EMPTY,
                 typeRef<EmqxApiRequestResult<Any>>(),
-                variables
+                *variables
             )
         } catch (error: RestClientException) {
             throw EmqxApiException(message = "Failed to call EMQ X api $url", error = error)

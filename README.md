@@ -1,8 +1,10 @@
 # Mqtt Admin Starter
 
 This project contains a basic service to register and unregister clients to authenticate to an MQTT broker for Spring
-Boot. As of the current version only support for EMQ X is implemented, but other brokers could be implemented by
+Boot. As of the current version only support for EMQ X 4.3 is implemented, but other brokers could be implemented by
 subclassing the `BrokerApiClient` interface.
+
+> :warning: EMQ X regulary changes it's api so only use with the specified version!
 
 ## Getting started
 
@@ -45,8 +47,7 @@ services:
       - 8081:8081
       - 18083:18083
     environment:
-      - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_clientid,emqx_auth_mnesia
-      - EMQX_AUTH__MNESIA__AS=username
+      - EMQX_LOADED_PLUGINS=emqx_management,emqx_dashboard,emqx_auth_mnesia
       - EMQX_ALLOW_ANONYMOUS=false
       - EMQX_ACL_NOMATCH=deny
 ```
@@ -61,12 +62,12 @@ class TestClientRegistration(private val clientService: ClientService) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun register() {
-        // Registers a client to authenticate via clientId and password
+        // Registers a client to authenticate via username and password
         // Can consume a various number of acl rules:
-        // AclRule(login: String, topic: String, action: TopicAction, allow: Boolean)
-        // Where login is some clientId and action is PUB|SUB|PUBSUB.
+        // AclRule(username: String, topic: String, action: TopicAction, allow: Boolean)
+        // Where and action is PUB|SUB|PUBSUB.
         val result = clientService.registerClient(
-            clientId = "testClientId",
+            username = "username",
             password = "password"
         )
 
@@ -78,14 +79,14 @@ class TestClientRegistration(private val clientService: ClientService) {
     }
 
     fun unregister() {
-        clientService.unregisterClient("testClientId")
+        clientService.unregisterClient("username")
     }
 
     fun addAclRules() {
         // Adds a various number of acl rules.
         clientService.addAclRules(
             AclRule(
-                login = "testClientId",
+                username = "username",
                 topic = "testTopic/#",
                 action = TopicAction.PUB,
                 allow = true
@@ -95,7 +96,7 @@ class TestClientRegistration(private val clientService: ClientService) {
 
     fun deleteAclRules() {
         // Deletes all acl rules for the client on the given topic.
-        clientService.deleteAclRules(clientId = "testClientId", topic = "testTopic/#")
+        clientService.deleteAclRules(username = "username", topic = "testTopic/#")
     }
 }
 ```
