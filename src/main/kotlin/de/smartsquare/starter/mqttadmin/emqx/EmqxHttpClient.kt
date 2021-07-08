@@ -60,13 +60,18 @@ internal class EmqxHttpClient(@Qualifier("emqx") private val restTemplate: RestT
         evaluateResult(result)
     }
 
+    @Suppress("ThrowsCount")
     private fun <T> evaluateResult(result: ResponseEntity<EmqxApiRequestResult<T>>) {
         if (result.statusCode != HttpStatus.OK) {
-            throw EmqxApiException(result.statusCodeValue, result.body.message)
+            throw EmqxApiException(result.statusCodeValue, result.body?.message)
         }
 
-        if (result.body.code != 0) {
-            throw EmqxApiException(result.body.code, result.body.message)
+        if (result.body?.code == null) {
+            throw EmqxApiException(null, "Malformed response from EMQ X api")
+        }
+
+        if (result.body?.code != 0) {
+            throw EmqxApiException(result.body?.code, result.body?.message)
         }
     }
 }

@@ -1,13 +1,15 @@
 package de.smartsquare.starter.mqttadmin
 
+import org.junit.jupiter.api.extension.BeforeAllCallback
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.slf4j.LoggerFactory
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
-abstract class EmqxInfrastructure {
+class EmqxExtension : BeforeAllCallback {
 
     companion object {
         private val logger = LoggerFactory.getLogger(this::class.java)
@@ -20,18 +22,26 @@ abstract class EmqxInfrastructure {
             .withExposedPorts(1883, 8081, 18083)
             .waitingFor(Wait.forLogMessage(".*is running now!.*", 1))
             .withLogConsumer(logConsumer.withPrefix("emqx"))
+    }
 
-        @JvmStatic
-        @DynamicPropertySource
-        fun emqxApiProperties(registry: DynamicPropertyRegistry) {
-            registry.add("emqx.api.port") { emqx.getMappedPort(18083) }
-            registry.add("emqx.api.host") { "localhost" }
-            registry.add("emqx.api.username") { "admin" }
-            registry.add("emqx.api.password") { "public" }
+    private val lock = ReentrantLock()
+
+    override fun beforeAll(context: ExtensionContext) {
+        val store = context.root.getStore(ExtensionContext.Namespace.GLOBAL)
+
+        lock.withLock {
+            val emqxStarted = store.getOrDefault("emqx", Boolean::class.java, false)
+
+            if (!emqxStarted) {
+                emqx.start()
+
+                store.put("emqx", true)
+            }
         }
 
-        init {
-            emqx.start()
-        }
+        System.setProperty("emqx.api.host", emqx.host)
+        System.setProperty("emqx.api.port", emqx.getMappedPort(18083).toString())
+        System.setProperty("emqx.api.username", "admin")
+        System.setProperty("emqx.api.password", "public")
     }
 }

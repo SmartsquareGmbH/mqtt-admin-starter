@@ -1,6 +1,6 @@
 package de.smartsquare.starter.mqttadmin.client
 
-import de.smartsquare.starter.mqttadmin.EmqxInfrastructure
+import de.smartsquare.starter.mqttadmin.EmqxExtension
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.PUB
 import de.smartsquare.starter.mqttadmin.client.AclRule.TopicAction.SUB
 import de.smartsquare.starter.mqttadmin.client.ClientActionResult.Failure
@@ -15,11 +15,13 @@ import org.amshove.kluent.shouldHaveSingleItem
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
+@ExtendWith(EmqxExtension::class)
 @SpringBootTest(classes = [EmqxApiConfiguration::class, ClientConfiguration::class])
-class ClientServiceTest : EmqxInfrastructure() {
+class ClientServiceTest {
 
     @Autowired
     private lateinit var clientService: ClientService
