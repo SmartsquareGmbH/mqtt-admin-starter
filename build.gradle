@@ -27,6 +27,7 @@ plugins {
     id "signing"
     id "maven-publish"
     id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlinVersion"
     id "org.jetbrains.dokka" version "$dokkaVersion"
     id "io.gitlab.arturbosch.detekt" version "$detektVersion"
@@ -35,9 +36,35 @@ plugins {
     id "io.github.gradle-nexus.publish-plugin" version "$gradleNexusVersion"
 }
 
+group = "de.smartsquare"
+version = System.getenv("GITHUB_VERSION") ?: "1.0.0-SNAPSHOT"
+description = "Spring Boot Starter providing admin functionality for brokers."
+
 repositories {
     mavenCentral()
     jcenter()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+
+    implementation "org.springframework.boot:spring-boot:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+
+    kapt "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+
+    testImplementation "org.amshove.kluent:kluent:$kluentVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testImplementation "org.testcontainers:testcontainers:1.15.2"
+    testImplementation "org.testcontainers:junit-jupiter:1.15.2"
 }
 
 java {
@@ -55,23 +82,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     }
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-
-    implementation "org.springframework.boot:spring-boot:$springBootVersion"
-    implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
-    implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
-    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
-
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
-
-    testImplementation "org.amshove.kluent:kluent:$kluentVersion"
-    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testImplementation "org.testcontainers:testcontainers:1.15.2"
-    testImplementation "org.testcontainers:junit-jupiter:1.15.2"
+kapt {
+    arguments {
+        arg(
+                "org.springframework.boot.configurationprocessor.additionalMetadataLocations",
+                "$projectDir/src/main/resources"
+        )
+    }
 }
 
 dokkaHtml {
@@ -88,6 +105,10 @@ dokkaHtml {
     }
 }
 
+tasks.withType(Javadoc).all {
+    it.dependsOn dokkaHtml
+}
+
 detekt {
     config = files("${project.rootDir}/detekt.yml")
 
@@ -98,13 +119,12 @@ ktlint {
     outputToConsole = true
 }
 
-tasks.withType(Javadoc).all {
-    it.dependsOn dokkaHtml
+test {
+    useJUnitPlatform {
+        excludeEngines "junit-vintage"
+    }
 }
 
-group = "de.smartsquare"
-version = System.getenv("GITHUB_VERSION") ?: "1.0.0-SNAPSHOT"
-description = "Spring Boot Starter providing admin functionality for brokers."
 
 publishing {
     publications {
@@ -165,10 +185,4 @@ signing {
     def signingPassword = findProperty("signingPassword") ?: System.getenv("GPG_PASSPHRASE")
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.mavenJava
-}
-
-test {
-    useJUnitPlatform {
-        excludeEngines "junit-vintage"
-    }
 }

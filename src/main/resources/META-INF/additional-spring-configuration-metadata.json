@@ -1,0 +1,23 @@
+{
+  "properties": [
+    {
+      "name": "emqx.api.schema",
+      "defaultValue": "http"
+    }
+  ],
+  "hints": [
+    {
+      "name": "spring.jpa.hibernate.ddl-auto",
+      "values": [
+        {
+          "value": "http",
+          "description": "Use HTTP."
+        },
+        {
+          "value": "https",
+          "description": "Use HTTPS."
+        }
+      ]
+    }
+  ]
+}
