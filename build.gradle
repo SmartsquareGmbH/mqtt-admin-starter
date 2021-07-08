@@ -1,6 +1,7 @@
 buildscript {
     ext {
         javaVersion = JavaVersion.VERSION_1_8
+        gradleVersion = "7.1.1"
 
         junitVersion = "5.7.1"
         kotlinVersion = "1.5.0"
@@ -12,6 +13,7 @@ buildscript {
         dokkaVersion = "1.4.32"
         dependencyManagementVersion = "1.0.11.RELEASE"
         gradleNexusVersion = "1.1.0"
+        gradleVersionsPluginVersion = "0.39.0"
     }
 
     repositories {
@@ -34,6 +36,7 @@ plugins {
     id "org.jlleitschuh.gradle.ktlint" version "$ktlintVersion"
     id "io.spring.dependency-management" version "$dependencyManagementVersion"
     id "io.github.gradle-nexus.publish-plugin" version "$gradleNexusVersion"
+    id "com.github.ben-manes.versions" version "$gradleVersionsPluginVersion"
 }
 
 group = "de.smartsquare"
@@ -185,4 +188,21 @@ signing {
     def signingPassword = findProperty("signingPassword") ?: System.getenv("GPG_PASSPHRASE")
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.mavenJava
+}
+
+dependencyUpdates {
+    rejectVersionIf {
+        isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
+    }
+}
+
+static def isNonStable(String version) {
+    def stableKeyword = ["RELEASE", "FINAL", "GA"].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+
+    return !stableKeyword && !(version ==~ regex)
+}
+
+wrapper {
+    gradleVersion = project.ext.gradleVersion
 }
