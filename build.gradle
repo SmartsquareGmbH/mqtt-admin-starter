@@ -46,7 +46,6 @@ description = "Spring Boot Starter providing admin functionality for brokers."
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
